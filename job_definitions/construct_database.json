@@ -1,0 +1,108 @@
+{
+    "name": "{job_name}_{env}",
+    "tasks":
+    [
+        {
+            "task_key": "ConstructDatabase",
+            "job_cluster_key": "{job_name}_job_cluster_{env}",
+            "notebook_task":
+            {
+                "notebook_path": "notebooks/construct_database_notebook",
+                "source": "GIT",
+                "base_parameters":
+                {
+                    "env": "{env}"
+                }
+            },
+            "timeout_seconds": 600,
+            "max_retries": 2,
+            "min_retry_interval_millis": 300000,
+            "retry_on_timeout": true
+        },
+        {
+            "task_key": "GrantDatabasePrivileges",
+            "depends_on":
+            [
+                {
+                    "task_key": "ConstructDatabase"
+                }
+            ],
+            "sql_task":
+            {
+                "query":
+                {
+                    "query_id": "{grant_database_privileges_query_id}"
+                },
+                "warehouse_id": "{sql_cluster_id}",
+                "parameters":
+                {
+                    "env": "{env}",
+                    "bi_spn": "{bi_spn}"
+                }
+            },
+            "timeout_seconds": 600,
+            "max_retries": 2,
+            "min_retry_interval_millis": 300000,
+            "retry_on_timeout": true
+        }
+    ],
+    "email_notifications":
+    {
+        "no_alert_for_skipped_runs": false,
+        "on_failure":
+        [
+            "{notification_email}"
+        ]
+    },
+    "job_clusters":
+    [
+        {
+            "job_cluster_key": "{job_name}_job_cluster_{env}",
+            "new_cluster":
+            {
+                "spark_version": "12.2.x-scala2.12",
+                "instance_pool_id": "{instance_pool_id}",
+                "num_workers": 1,
+                "runtime_engine": "STANDARD",
+                "data_security_mode": "LEGACY_SINGLE_USER_STANDARD",
+                "spark_conf":
+                {
+                    "spark.databricks.delta.preview.enabled": true
+                },
+                "spark_env_vars":
+                {
+                    "PIP_USR": "{{secrets/bna-adbscope-common-repo/pip_usr}}",
+                    "PIP_PWD": "{{secrets/bna-adbscope-common-repo/pip_pwd}}"
+                },
+                "init_scripts":
+                {
+                    "dbfs":
+                    {
+                        "destination": "dbfs:/init_script/{env}/init_ml_batch_job_cluster.sh"
+                    }
+                },
+                "azure_attributes":
+                {
+                    "first_on_demand": 1,
+                    "availability": "ON_DEMAND_AZURE",
+                    "spot_bid_max_price": -1
+                }
+            }
+        }
+    ],
+    "timeout_seconds": 0,
+    "max_concurrent_runs": 1,
+    "git_source":
+    {
+        "git_url": "{git_source_url}",
+        "git_commit": "{git_source_commit}",
+        "git_provider": "{git_source_provider}"
+    },
+    "tags": {
+        "repo": "ml-demandtrends",
+        "job_name": "construct_database_ml-demandtrends",
+        "env": "{env}",
+        "run_type": "one_time",
+        "trigger_type": "pipeline"
+    }
+}

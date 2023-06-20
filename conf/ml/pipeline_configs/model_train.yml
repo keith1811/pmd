@@ -1,0 +1,65 @@
+feature_transformation:
+  label_col: &label_col "CODE"
+  text_col_name: &text_col_name "CONCAT_FEATURE"
+
+  feature_concat_instructions:
+    concat_cols:
+      - "SUPPLIER_ORG"
+      - "BUYER_ORG"
+      - "DESCRIPTION"
+      - "MANUFACTURER_NAME"
+      - "ITEM_TYPE"
+      - "IS_ADHOC"
+    concat_col_name: *text_col_name
+
+  handeling_imbalanced_label_instructions:
+    how: filter   #['filter', 'replace', 'no_action']
+    col_name: *label_col
+    threshold: 262
+    replacement_val: "99999999"
+
+  sampling_instructions:
+    n: 800000
+    random_state: 42
+
+  tokenization_instructions:
+    tokenized_col_name: *text_col_name
+    max_features: &max_features 20001
+
+  padding_instructions:
+     max_text_len: &max_text_len 300
+
+mlflow_params:
+    run_name: "CNN_baseline_exp"
+    experiment_path: ""
+    model_name: "po_classification"
+
+train_val_split_config:
+  validation_size: 0.1
+  random_state: 42
+
+train_instructions:
+  dropout: "0.3"
+
+  input_dim: *max_features
+
+  input_length: *max_text_len
+
+  compile_conf:
+    # optimzer_conf:
+    metrics:
+      - "accuracy"
+
+  callbacks:
+    #tensorboard:
+    #checkpoint:
+    early_stop:
+      monitor: "val_accuracy"
+      mode: "max"
+      patience: 3
+
+  fit_conf:
+    epochs: 5
+    batch_size: 512
+    shuffle: True
+    verbose: 1

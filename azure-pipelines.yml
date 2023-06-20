@@ -1,0 +1,14 @@
+# Using Piper general purpose pipeline for Azure
+
+trigger:
+  - main
+
+resources:
+  repositories:
+    - repository: infra-pipeline-azure
+      endpoint: github.tools.sap
+      type: githubenterprise
+      name: BNA/infra-pipeline-azure
+
+extends:
+  template: templates/template_databricks_jobs.yml@infra-pipeline-azure

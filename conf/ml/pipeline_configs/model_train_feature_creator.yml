@@ -1,0 +1,128 @@
+raw_input_tables:
+  production_2022_community_1: 
+    path: "abfss://sbn-prod-sacontainer-mltraining@sbnprodmltraining.dfs.core.windows.net/input_datasets/production-data-2022/ANLIVE1_20230207_processed.csv"
+
+  production_2022_community_3: 
+    path: "abfss://sbn-prod-sacontainer-mltraining@sbnprodmltraining.dfs.core.windows.net/input_datasets/production-data-2022/ANLIVE3_20230207_processed.csv"
+
+  production_2022_community_5: 
+    path: "abfss://sbn-prod-sacontainer-mltraining@sbnprodmltraining.dfs.core.windows.net/input_datasets/production-data-2022/ANLIVE5_20230207_processed.csv"
+
+  production_2022_community_7: 
+    path: "abfss://sbn-prod-sacontainer-mltraining@sbnprodmltraining.dfs.core.windows.net/input_datasets/production-data-2022/ANLIVE7_20230207_processed.csv"
+
+  production_2022_community_9: 
+    path: "abfss://sbn-prod-sacontainer-mltraining@sbnprodmltraining.dfs.core.windows.net/input_datasets/production-data-2022/ANLIVE9_20230207_processed.csv"
+
+  production_2022_community_11: 
+    path: "abfss://sbn-prod-sacontainer-mltraining@sbnprodmltraining.dfs.core.windows.net/input_datasets/production-data-2022/ANLIVE11_20230207_processed.csv"
+   
+  production_2022_community_13: 
+    path: "abfss://sbn-prod-sacontainer-mltraining@sbnprodmltraining.dfs.core.windows.net/input_datasets/production-data-2022/ANLIVE13_20230207_processed.csv"
+ 
+  production_2022_community_15: 
+    path: "abfss://sbn-prod-sacontainer-mltraining@sbnprodmltraining.dfs.core.windows.net/input_datasets/production-data-2022/ANLIVE15_20230207_processed.csv"
+
+  unspsc_reference_table: 
+    path: "abfss://sbn-prod-sacontainer-mltraining@sbnprodmltraining.dfs.core.windows.net/input_datasets/COMMODITY_V13.csv"
+
+
+data_prep_params:  
+  unspsc_processsing:
+    unspsc_col: "CODE"
+
+    length_filter:
+      regex_pattern_filter: 
+        "CODE": ^(?!0{8})\d{8}$
+
+    non_zero_filter:
+      not_contains_char_filter:
+        "SEGMENT": "00"
+        "FAMILY": "00"
+        "CLASS": "00"
+  
+  select_cols_instructions:       
+    select:
+      - "SUPPLIER_ORG"
+      - "BUYER_ORG"
+      - "PO_ITEM_ID"
+      - "DESCRIPTION" 
+      - "SUPPLIER_PART"
+      - "MANUFACTURER_PART"
+      - "MANUFACTURER_NAME"
+      - "ITEM_TYPE" 
+      - "IS_ADHOC" 
+      - "CODE"
+      - "SEGMENT"
+      - "FAMILY"
+      - "CLASS"
+      - "COMMODITY"
+  
+  handle_str_na_vals:
+    columns:
+      - "SUPPLIER_ORG"
+      - "BUYER_ORG"
+      - "PO_ITEM_ID"
+      - "DESCRIPTION"
+      - "SUPPLIER_PART"
+      - "MANUFACTURER_PART"
+      - "MANUFACTURER_NAME"
+      - "ITEM_TYPE"
+      - "IS_ADHOC"
+
+    na_vals_list:
+      - "N/A"
+      - "?"
+      - "null"
+      - "NULL"
+      - "Null"
+      - "NA"
+      - "Not Available"
+      - "not available"
+      - "NAN"
+      - "nan"
+      - "Nan"
+
+    replacement_val: "N/A"
+
+    na_filter_instructions:
+      not_contains_char_filter:
+        "DESCRIPTION": "N/A"
+        "PO_ITEM_ID": "N/A"
+
+  drop_duplicates_instructions:
+    index_col: 
+      - "PO_ITEM_ID"
+
+    cat_cols:
+      - "SUPPLIER_ORG"
+      - "BUYER_ORG"
+      - "DESCRIPTION" 
+      - "SUPPLIER_PART"
+      - "MANUFACTURER_PART"
+      - "MANUFACTURER_NAME"
+      - "ITEM_TYPE" 
+      - "IS_ADHOC" 
+      - "CODE"
+
+  handle_missing_vals: 
+    drop_na_instructions:  
+      drop_rows: True
+      dropna_config:
+        subset: 
+          - "PO_ITEM_ID"
+          - "DESCRIPTION" 
+        how: "any" 
+
+    fill_na_instructions:
+      fill_missing_val: True
+      fillna_config:
+        value: "N/A"
+        subset: 
+          - "SUPPLIER_ORG"
+          - "BUYER_ORG"
+          - "SUPPLIER_PART"
+          - "MANUFACTURER_PART"
+          - "MANUFACTURER_NAME"
+          - "ITEM_TYPE" 
+          - "IS_ADHOC" 

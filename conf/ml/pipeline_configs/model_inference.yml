@@ -1,0 +1,106 @@
+data_prep_params:
+  select_cols_instructions:
+    select:
+      - "ID"
+      - "SUPPLIER_ORG"
+      - "BUYER_ORG"
+      - "PO_ITEM_ID"
+      - "DESCRIPTION"
+      - "SUPPLIER_PART"
+      - "MANUFACTURER_PART"
+      - "MANUFACTURER_NAME"
+      - "ITEM_TYPE"
+      - "IS_ADHOC"
+
+  handle_str_na_vals:
+    columns:
+      - "SUPPLIER_ORG"
+      - "BUYER_ORG"
+      - "PO_ITEM_ID"
+      - "DESCRIPTION"
+      - "SUPPLIER_PART"
+      - "MANUFACTURER_PART"
+      - "MANUFACTURER_NAME"
+      - "ITEM_TYPE"
+      - "IS_ADHOC"
+
+    na_vals_list:
+      - "N/A"
+      - "?"
+      - "null"
+      - "NULL"
+      - "Null"
+      - "NA"
+      - "Not Available"
+      - "not available"
+      - "NAN"
+      - "nan"
+      - "Nan"
+
+    replacement_val: "N/A"
+
+    na_filter_instructions:
+      not_contains_char_filter:
+        "DESCRIPTION": "N/A"
+        "PO_ITEM_ID": "N/A"
+
+  drop_duplicates_instructions:
+    index_col:
+      - "PO_ITEM_ID"
+
+    cat_cols:
+      - "SUPPLIER_ORG"
+      - "BUYER_ORG"
+      - "DESCRIPTION"
+      - "SUPPLIER_PART"
+      - "MANUFACTURER_PART"
+      - "MANUFACTURER_NAME"
+      - "ITEM_TYPE"
+      - "IS_ADHOC"
+
+  handle_missing_vals:
+    drop_na_instructions:
+      drop_rows: True
+      dropna_config:
+        subset:
+          - "PO_ITEM_ID"
+          - "DESCRIPTION"
+        how: "any"
+
+    fill_na_instructions:
+      fill_missing_val: True
+      fillna_config:
+        value: "N/A"
+        subset:
+          - "SUPPLIER_ORG"
+          - "BUYER_ORG"
+          - "SUPPLIER_PART"
+          - "MANUFACTURER_PART"
+          - "MANUFACTURER_NAME"
+          - "ITEM_TYPE"
+          - "IS_ADHOC"
+
+feature_transformation:
+  text_col_name: &text_col_name "CONCAT_FEATURE"
+
+  feature_concat_instructions:
+    concat_cols:
+      - "SUPPLIER_ORG"
+      - "BUYER_ORG"
+      - "DESCRIPTION"
+      - "MANUFACTURER_NAME"
+      - "ITEM_TYPE"
+      - "IS_ADHOC"
+    concat_col_name: *text_col_name
+
+  tokenization_instructions:
+    tokenized_col_name: *text_col_name
+
+  padding_instructions:
+     max_text_len: &max_text_len 300
+
+
+mlflow_params:
+  model_name: "po_classification"
+  model_registry_stage: "Staging"
+  model_version: 2

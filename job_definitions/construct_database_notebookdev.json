@@ -1,0 +1,59 @@
+{
+    "name": "{job_name}_{env}",
+    "tasks": [
+        {
+            "task_key": "ConstructDatabase",
+            "existing_cluster_id": "{existing_cluster_id}",
+            "notebook_task": {
+                "notebook_path": "notebooks/construct_database_notebook",
+                "source": "GIT",
+                "base_parameters": {
+                    "env": "{env}"
+                }
+            },
+            "timeout_seconds": 600,
+            "max_retries": 2,
+            "min_retry_interval_millis": 300000,
+            "retry_on_timeout": true
+        },
+        {
+            "task_key": "GrantDatabasePrivileges",
+            "depends_on": [
+                {
+                    "task_key": "ConstructDatabase"
+                }
+            ],
+            "sql_task": {
+                "query": {
+                    "query_id": "{grant_database_privileges_query_id}"
+                },
+                "warehouse_id": "{sql_cluster_id}",
+                "parameters": {
+                    "env": "{env}",
+                    "bi_spn": "{bi_spn}"
+                }
+            },
+            "timeout_seconds": 600,
+            "max_retries": 2,
+            "min_retry_interval_millis": 300000,
+            "retry_on_timeout": true
+        }
+    ],
+    "email_notifications": {
+        "no_alert_for_skipped_runs": false
+    },
+    "timeout_seconds": 0,
+    "max_concurrent_runs": 1,
+    "git_source": {
+        "git_url": "{git_source_url}",
+        "git_commit": "{git_source_commit}",
+        "git_provider": "{git_source_provider}"
+    },
+    "tags": {
+        "repo": "ml-demandtrends",
+        "job_name": "construct_database_ml-demandtrends",
+        "env": "{env}",
+        "run_type": "one_time",
+        "trigger_type": "pipeline"
+    }
+}
